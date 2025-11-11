@@ -1,1 +1,29 @@
-raw_data/
+data/
+.env
+
+.env.yaml
+train_flow-deployment.yaml
+
+# System files
+.DS_Store
+.ipynb_checkpoints
+*.pyc
+*.swp
+build/
+dist/
+.coverage
+*.iml
+*.egg-info
+*.vscode
+
+# Data files
+*.csv
+*.sqlite
+*.zip
+
+*.sublime-project
+*.sublime-workspace
+**/*.code-workspace
+
+# Other
+pytestdebug.log
