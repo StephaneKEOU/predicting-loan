@@ -1,3 +1,5 @@
+pylint
+jupyterlab
 wheel
 nbresult
 colorama
