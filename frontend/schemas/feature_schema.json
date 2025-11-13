@@ -1,0 +1,11 @@
+{
+  "target": "default",
+  "features": [
+    {"name":"credit_score","dtype":"float","min":300,"max":850,"default":650},
+    {"name":"income","dtype":"float","min":0,"max":500000,"default":50000},
+    {"name":"loan_amount","dtype":"float","min":0,"max":300000,"default":15000},
+    {"name":"age","dtype":"int","min":18,"max":99,"default":35},
+    {"name":"employment_length","dtype":"int","min":0,"max":40,"default":5},
+    {"name":"loan_purpose","dtype":"category","choices":["debt_consolidation","car","home_improvement","other"],"default":"other"}
+  ]
+}

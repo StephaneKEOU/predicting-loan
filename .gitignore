@@ -28,3 +28,10 @@ dist/
 
 # Other
 pytestdebug.log
+.venv/
+.env
+__pycache__/
+*.pyc
+*.db
+.streamlit/
+frontend/models/*.pkl
