@@ -1,3 +1,17 @@
+import pandas as pd
+import os
+
+def load_data(path: str = "raw_data/Loan_default.csv"):
+
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Could not find data at: {path}")
+
+    df = pd.read_csv(path)
+    return df
+
+
+
+
 class SimpleMissingHandler:
     def __init__(self, how="auto", constant_value=None):
 
