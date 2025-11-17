@@ -20,22 +20,25 @@ from sklearn.metrics import (
     confusion_matrix, RocCurveDisplay, roc_auc_score
 )
 
-from data import clean_data
+from data import SimpleMissingHandler, load_data
 
 
 
-# -------------------------------------------------------
-# LOAD DATA
-# -------------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath('raw_data'))
-DATA_PATH = os.path.join(BASE_DIR, "raw_data", "Loan_default.csv")
+from preprocessor import preprocess_data
 
-df = pd.read_csv(DATA_PATH)
-df = clean_data(df)  # <--- IMPORTANT: use returned cleaned df
+
+df = load_data()
+handler = SimpleMissingHandler(how="auto")
+df_fixed = handler.fix_missing(df)
+
+# TARGET + DROP USELESS COLUMNS
+df = df.drop(columns=["LoanID"])     # ID column not useful
+print (df_fixed.head())
 
 
 X = df.drop(columns=["Default"])
 y = df["Default"]
+
 
 categorical_cols = ['Education', 'EmploymentType', 'MaritalStatus', 'LoanPurpose']
 
@@ -45,11 +48,11 @@ numerical_cols = [
     'HasDependents', 'HasCoSigner', 'HasMortgage'
 ]
 
+
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.25, random_state=42, stratify=y
 )
-
-
 # -------------------------------------------------------
 # MODEL FACTORY
 # -------------------------------------------------------
@@ -60,25 +63,11 @@ def get_models():
         "RandomForest": RandomForestClassifier(random_state=42, n_jobs=-1)
     }
 
-
+preprocessor = preprocess_data(df_fixed)
 # -------------------------------------------------------
 # TRAINING FUNCTION
 # -------------------------------------------------------
 def train_model():
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("num", Pipeline([
-                ("imputer", SimpleImputer(strategy="median")),
-                ("scaler", StandardScaler())
-            ]), numerical_cols),
-
-            ("cat", Pipeline([
-                ("imputer", SimpleImputer(strategy="most_frequent")),
-                ("onehot", OneHotEncoder(handle_unknown="ignore"))
-            ]), categorical_cols)
-        ]
-    )
-
     models = get_models()
     results = {}
     roc_data = {}
