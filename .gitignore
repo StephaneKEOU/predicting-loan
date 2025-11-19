@@ -1,7 +1,6 @@
 raw_data/
 data/
 .env
-
 .env.yaml
 train_flow-deployment.yaml
 
@@ -28,3 +27,7 @@ dist/
 
 # Other
 pytestdebug.log
+.venv/
+__pycache__/
+*.db
+.streamlit/
