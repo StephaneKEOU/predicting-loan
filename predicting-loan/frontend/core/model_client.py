@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from core.config import MODEL_PATH, DECISION_THRESHOLD
+from core.config import (MODEL_PATH, DECISION_THRESHOLD, LOW_MEDIUM_THRESHOLD, MEDIUM_HIGH_THRESHOLD)
 
 class ModelClient:
     def __init__(self) -> None:
@@ -12,16 +12,17 @@ class ModelClient:
         self.model = None
         if not self.use_dummy:
             try:
-                self.model = joblib.load(MODEL_PATH)  # ideally a sklearn Pipeline
+                self.model = joblib.load(MODEL_PATH)
             except Exception:
                 # fall back to dummy if load fails
                 self.use_dummy = True
 
     def predict(self, X: pd.DataFrame):
         """
-        Returns (probs, labels) — both numpy arrays.
+        Returns:
         probs: probability of default (float 0..1)
-        labels: 1 = High Risk, 0 = Low Risk
+        labels: 1 = High Risk, 0 = Low Risk (DECISION_THRESHOLD)
+        risk_bands: "Low" / "Medium / "High" for the UI
         """
         if self.use_dummy:
             # deterministic mock using numeric sum; OK for FE dev
@@ -37,5 +38,17 @@ class ModelClient:
                 # worst case: hard labels; fabricate soft probs
                 labels = self.model.predict(X)
                 probs = np.where(labels == 1, 0.51, 0.49).astype(float)
+
+    # high risk label MVP
         labels = (probs >= self.threshold).astype(int)
-        return probs, labels
+
+    # Low / Medium / High banding
+        risk_bands = []
+        for p in probs :
+            if p < LOW_MEDIUM_THRESHOLD:
+                risk_bands.append("Low")
+            elif p < MEDIUM_HIGH_THRESHOLD:
+                risk_bands.append("Medium")
+            else:
+                risk_bands.append("High")
+        return probs, labels, np.array(risk_bands, dtype=object)
