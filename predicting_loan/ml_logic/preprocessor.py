@@ -55,7 +55,7 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
 
     onehot_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
     ])
 
     # --- ColumnTransformer ---
