@@ -8,10 +8,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler, OrdinalEncoder
 
-
-
-
-
 def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
     """
     Builds a ColumnTransformer that applies:
@@ -26,13 +22,13 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
     robust_numeric = ["Income", "LoanAmount", "MonthsEmployed"]
 
     # Numeric (Standard scaling)
-    standard_numeric = ["Age", "CreditScore", "InterestRate", "DTIRatio"]
+    standard_numeric = ["Age", "InterestRate"]
 
     # Ordinal categorical (natural order or few integers)
-    ordinal_cats = ["LoanTerm", "NumCreditLines", "HasMortgage", "HasDependents", "HasCoSigner"]
+    #ordinal_cats = ["LoanTerm", "NumCreditLines", "HasMortgage", "HasDependents", "HasCoSigner"]
 
     # Nominal categorical (no order, low cardinality)
-    onehot_cats = ["Education", "EmploymentType", "MaritalStatus", "LoanPurpose"]
+    onehot_cats = ["EmploymentType"]
 
     # === Pipelines ===
 
@@ -46,10 +42,10 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
         ("scaler", StandardScaler())
     ])
 
-    ordinal_pipeline = Pipeline([
+    '''ordinal_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("encoder", OrdinalEncoder())
-    ])
+    ])'''
 
     onehot_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
@@ -61,7 +57,7 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
     preprocessor = ColumnTransformer(transformers=[
         ("robust_num", robust_pipeline, robust_numeric),
         ("standard_num", standard_pipeline, standard_numeric),
-        ("ordinal_cat", ordinal_pipeline, ordinal_cats),
+        #("ordinal_cat", ordinal_pipeline, ordinal_cats),
         ("onehot_cat", onehot_pipeline, onehot_cats)
     ])
 
