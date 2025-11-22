@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from core.schema_loader import load_schema
-from core.config import FEATURE_SCHEMA, DECISION_THRESHOLD
+from core.config import FEATURE_SCHEMA, DECISION_THRESHOLD, LOW_MEDIUM_THRESHOLD, MEDIUM_HIGH_THRESHOLD
 from core.model_client import ModelClient
 from core.db import init_db, log
 
@@ -20,12 +20,17 @@ init_db()
 st.sidebar.title("Loan Default MVP")
 mode = st.sidebar.radio("Mode", ["Single Input", "Batch CSV"])
 st.sidebar.write("Threshold: **{:.2f}**".format(DECISION_THRESHOLD))
+st.sidebar.write(
+    "Low/Medium cutoff: **{:.2%}**".format(LOW_MEDIUM_THRESHOLD)
+)
+st.sidebar.write(
+    "Medium/High cutoff: **{:.2%}**".format(MEDIUM_HIGH_THRESHOLD)
+)
 
 # Title
 st.title("Loan Default Risk Prediction")
 
 def coerce_and_order(df: pd.DataFrame) -> pd.DataFrame:
-    """Ensure DataFrame has all required feature columns in correct order and dtype-ish."""
     cols = []
     for f in schema["features"]:
         name = f["name"]
@@ -70,12 +75,15 @@ if mode == "Single Input":
 
     if st.button("Predict"):
         X = coerce_and_order(pd.DataFrame([values]))
-        probs, labels = model.predict(X)
+        probs, labels, risk_bands = model.predict(X)
         prob = float(probs[0])
         label = int(labels[0])
+        risk_band = str(risk_bands[0])
+        
         st.metric("Probability of Default", "{:.2%}".format(prob))
-        st.write("Prediction:", "**High Risk**" if label == 1 else "Low Risk")
-        st.dataframe(X.assign(prob_default=probs, pred_label=labels))
+        st.write("Binary Prediction:", "**High Risk**" if label == 1 else "Low Risk")
+        st.write("Risk band:", f"**{risk_band}**")
+        st.dataframe(X.assign(prob_default=probs, pred_label=labels, risk_band=risk_bands))
         log(datetime.utcnow().isoformat(), "single", json.dumps(values), prob, label)
 
 else:
@@ -86,8 +94,8 @@ else:
         st.caption("Preview")
         st.dataframe(raw.head())
         X = coerce_and_order(raw.copy())
-        probs, labels = model.predict(X)
-        out = X.assign(prob_default=probs, pred_label=labels)
+        probs, labels, risk_bands = model.predict(X)
+        out = X.assign(prob_default=probs, pred_label=labels, risk_band=risk_bands)
         st.success("Batch scoring complete.")
         st.dataframe(out.head())
         st.download_button(

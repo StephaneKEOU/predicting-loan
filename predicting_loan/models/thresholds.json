@@ -1,0 +1,10 @@
+{
+    "default_threshold": 0.20,
+    "low_medium_threshold": 0.05,
+    "medium_high_threshold":0.20,
+    "labels":{
+        "low": "Low risk (PD < 5%)",
+        "medium": "Medium risk (5% ≤ PD < 20%)",
+        "high": "High risk (PD ≥ 20%)"
+    }
+}
