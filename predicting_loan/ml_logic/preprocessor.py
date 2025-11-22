@@ -2,9 +2,8 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import RobustScaler, OrdinalEncoder
+from sklearn.preprocessing import (OneHotEncoder,StandardScaler,RobustScaler)
+
 
 def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
     """
