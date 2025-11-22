@@ -5,7 +5,10 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import joblib
 
+from pathlib import Path
+from predicting_loan.frontend.core.config import MODEL_PATH
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
@@ -158,9 +161,36 @@ def print_summary(results):
 
 
 # -------------------------------------------------------
+# SAVE PIPELINE TO PKL
+# -------------------------------------------------------
+
+def save_logistic_pipeline(X, y):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    from predicting_loan.ml_logic.preprocessor import preprocess_data
+
+    preprocessor = preprocess_data(X)
+
+    pipe = Pipeline([
+        ("preprocessor", preprocessor),
+        ("model", LogisticRegression(max_iter=1000, class_weight="balanced")),
+    ])
+
+    pipe.fit(X, y)
+
+    path = Path(MODEL_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(pipe, path)
+    print(f" Saved LogisticRegression pipeline to {path} ({path.stat().st_size} bytes)")
+
+# -------------------------------------------------------
 # RUN EVERYTHING
 # -------------------------------------------------------
-results, roc_data = train_model()
-plot_confusion_matrices(results)
-plot_roc_curves(roc_data)
-print_summary(results)
+if __name__ == "__main__":
+    results, roc_data = train_model()
+    plot_confusion_matrices(results)
+    plot_roc_curves(roc_data)
+    print_summary(results)
+
+    # Fit on full data and save Logistic Regression for frontend
+    save_logistic_pipeline(X, y)
