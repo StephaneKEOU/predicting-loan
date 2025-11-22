@@ -14,7 +14,7 @@ MODELS_DIR = FRONTEND_DIR / "models"
 
 THRESHOLDS_PATH = MODELS_DIR / "thresholds.json"
 
-# Thresholds loader 
+# Thresholds loader
 
 def load_thresholds() -> dict:
     if THRESHOLDS_PATH.exists():
@@ -30,7 +30,7 @@ def load_thresholds() -> dict:
             "high": "High risk (PD ≥ 20%)",
         },
     }
-    
+
 THRESHOLDS = load_thresholds()
 
 # config
