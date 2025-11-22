@@ -15,7 +15,7 @@ from core.config import (
 # Name mapping from frontend to API
 # API only accepts these 6 fields based on API schema
 FIELD_MAPPING = {
-    "MonthEMployed": "month_employed",
+    "MonthEmployed": "months_employed",
     "Age": "age",
     "Income": "income",
     "LoanAmount": "loan_amount",
