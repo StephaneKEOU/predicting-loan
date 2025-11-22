@@ -17,12 +17,12 @@ with open('predicting_loan/models/logistic_model.pkl', 'rb') as file:
     model = pickle.load(file)
 
 class LoanApplication(BaseModel):
-    loan_amount: Annotated[float, Field(gt=0)] = 5000
-    months_employed: Annotated[int, Field(ge=0, le=600)] = 24
-    age: Annotated[int, Field(ge=18, le=100)] = 35
-    income: Annotated[float, Field(ge=0)] = 60000
-    interest_rate: Annotated[float, Field(gt=0, le=100)] = 5.5
-    employment_type: EmploymentTypeEnum = EmploymentTypeEnum.full_time
+    loan_amount: Annotated[float, Field(gt=0, example=5000)]
+    months_employed: Annotated[int, Field(ge=0, le=600, example=24)]
+    age: Annotated[int, Field(ge=18, le=100, example=35)]
+    income: Annotated[float, Field(ge=0, example=60000)]
+    interest_rate: Annotated[float, Field(gt=0, le=100, example=5.5)]
+    employment_type: Annotated[EmploymentTypeEnum, Field(example=EmploymentTypeEnum.full_time)]
 
 @app.get("/")
 def root():
