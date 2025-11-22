@@ -14,7 +14,7 @@ MODELS_DIR = FRONTEND_DIR / "models"
 
 THRESHOLDS_PATH = MODELS_DIR / "thresholds.json"
 
-# Thresholds loader 
+# Thresholds loader
 
 def load_thresholds() -> dict:
     if THRESHOLDS_PATH.exists():
@@ -30,7 +30,7 @@ def load_thresholds() -> dict:
             "high": "High risk (PD ≥ 20%)",
         },
     }
-    
+
 THRESHOLDS = load_thresholds()
 
 # config
@@ -41,4 +41,4 @@ LOW_MEDIUM_THRESHOLD = float(THRESHOLDS.get("low_medium_threshold", 0.05))
 MEDIUM_HIGH_THRESHOLD = float(THRESHOLDS.get("medium_high_threshold", 0.20))
 RISK_LABELS = THRESHOLDS["labels"]
 FEATURE_SCHEMA = str(SCHEMAS_DIR / "feature_schema.json")
-MODEL_PATH = str(MODELS_DIR / "baseline_rf.pkl")
+MODEL_PATH = str(MODELS_DIR / "base_model.pkl")

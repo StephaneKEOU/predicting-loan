@@ -1,11 +1,110 @@
 {
   "target": "default",
   "features": [
-    {"name":"credit_score","dtype":"float","min":300,"max":850,"default":650},
-    {"name":"income","dtype":"float","min":0,"max":500000,"default":50000},
-    {"name":"loan_amount","dtype":"float","min":0,"max":300000,"default":15000},
-    {"name":"age","dtype":"int","min":18,"max":99,"default":35},
-    {"name":"employment_length","dtype":"int","min":0,"max":40,"default":5},
-    {"name":"loan_purpose","dtype":"category","choices":["debt_consolidation","car","home_improvement","other"],"default":"other"}
+    {
+      "name": "MonthsEmployed",
+      "dtype": "int",
+      "default": 60
+    },
+    {
+      "name": "Age",
+      "dtype": "int",
+      "default": 35
+    },
+    {
+      "name": "Income",
+      "dtype": "float",
+      "default": 50000
+    },
+    {
+      "name": "LoanAmount",
+      "dtype": "float",
+      "default": 15000
+    },
+    {
+      "name": "InterestRate",
+      "dtype": "float",
+      "default": 8.0
+    },
+    {
+      "name": "LoanTerm",
+      "dtype": "int",
+      "default": 36
+    },
+    {
+      "name": "EmploymentType",
+      "dtype": "category",
+      "choices": [
+        "Full-time",
+        "Part-time",
+        "Self-employed",
+        "Unemployed"
+      ],
+      "default": "Full-time"
+    },
+    {
+      "name": "LoanPurpose",
+      "dtype": "category",
+      "choices": [
+        "Home",
+        "Business",
+        "Education",
+        "Auto",
+        "Other"
+      ],
+      "default": "Home"
+    },
+    {
+      "name": "MaritalStatus",
+      "dtype": "category",
+      "choices": [
+        "Single",
+        "Married",
+        "Divorced",
+        "Widowed"
+      ],
+      "default": "Single"
+    },
+    {
+      "name": "Education",
+      "dtype": "category",
+      "choices": [
+        "High School",
+        "Bachelor's",
+        "Master's",
+        "PhD"
+      ],
+      "default": "Bachelor's"
+    },
+    {
+      "name": "HasCoSigner",
+      "dtype": "int",
+      "default": 0
+    },
+    {
+      "name": "HasDependents",
+      "dtype": "int",
+      "default": 0
+    },
+    {
+      "name": "HasMortgage",
+      "dtype": "int",
+      "default": 0
+    },
+    {
+      "name": "CreditScore",
+      "dtype": "float",
+      "default": 650
+    },
+    {
+      "name": "NumCreditLines",
+      "dtype": "int",
+      "default": 3
+    },
+    {
+      "name": "DTIRatio",
+      "dtype": "float",
+      "default": 0.3
+    }
   ]
 }

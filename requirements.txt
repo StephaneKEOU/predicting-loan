@@ -36,3 +36,5 @@ streamlit>=1.36
 joblib>=1.3
 SQLAlchemy>=2.0
 #python-dotenv>=1.0
+kagglehub
+joblib

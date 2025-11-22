@@ -1,13 +1,33 @@
-import pandas as pd
 import os
+import pandas as pd
+import kagglehub
+
 
 def load_data(path: str = "raw_data/Loan_default.csv"):
+    if os.path.exists(path):
+        return pd.read_csv(path)
 
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Could not find data at: {path}")
+    print(f"Local file not found at {path}. Pulling dataset from Kaggle...")
 
-    df = pd.read_csv(path)
-    return df
+    kaggle_path = kagglehub.dataset_download("nikhil1e9/loan-default")
+
+
+    csv_files = [
+        f for f in os.listdir(kaggle_path)
+        if f.lower().endswith(".csv")
+    ]
+
+    if not csv_files:
+        raise FileNotFoundError(
+            f"No CSV file found inside Kaggle dataset folder: {kaggle_path}"
+        )
+
+    kaggle_csv = os.path.join(kaggle_path, csv_files[0])
+
+    print(f"Using Kaggle dataset file: {kaggle_csv}")
+
+    return pd.read_csv(kaggle_csv)
+
 
 
 
