@@ -42,3 +42,7 @@ MEDIUM_HIGH_THRESHOLD = float(THRESHOLDS.get("medium_high_threshold", 0.20))
 RISK_LABELS = THRESHOLDS["labels"]
 FEATURE_SCHEMA = str(SCHEMAS_DIR / "feature_schema.json")
 MODEL_PATH = str(MODELS_DIR / "base_model.pkl")
+
+# API Configuration
+API_BASE_URL = os.getenv("API_BASE_URL", "https://my-api-app-726608232851.europe-west1.run.app")
+API_PREDICT_ENDPOINT = f"{API_BASE_URL}/api/v1/predict"
