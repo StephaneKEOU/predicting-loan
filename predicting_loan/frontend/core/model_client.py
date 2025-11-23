@@ -15,7 +15,7 @@ from core.config import (
 # Name mapping from frontend to API
 # API only accepts these 6 fields based on API schema
 FIELD_MAPPING = {
-    "MonthEmployed": "months_employed",
+    "MonthsEmployed": "months_employed",
     "Age": "age",
     "Income": "income",
     "LoanAmount": "loan_amount",
@@ -36,7 +36,7 @@ class ModelClient:
         self.threshold = DECISION_THRESHOLD
         self.api_url = api_url or API_PREDICT_ENDPOINT
         self.use_api = True #Using always API now
-    
+
     def _predict_single(self, row: pd.Series) -> Tuple[float, int]:
         """
         Single API request.
@@ -55,24 +55,24 @@ class ModelClient:
             )
             response.raise_for_status()
             result = response.json()
-            
+
             # API returns: {"prediction": 0, "probability": 0.313}
             prob = float(result.get("probability", 0.0))
             label = int(result.get("prediction", 0))
-            
+
             return prob, label
         except requests.exceptions.HTTPError as e:
             # More detailed error handling
             status_code = e.response.status_code if e.response else "Unknown"
             error_text = e.response.text if e.response else str(e)
             error_msg = f"API HTTP Error {status_code}: {error_text}"
-            
+
             # Show error in Streamlit if available
             try:
                 st.error(f"⚠️ API Error ({status_code}): {error_text[:200]}")
             except:
                 print(f"API request failed: {error_msg}")
-            
+
             # Fallback to dummy prediction
             s = row.select_dtypes(include=["number"]).sum()
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
@@ -89,7 +89,7 @@ class ModelClient:
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
-        
+
     def predict(self, X: pd.DataFrame):
         """
         Predict using the API for each row in the DataFrame.
@@ -100,16 +100,16 @@ class ModelClient:
         """
         probs = []
         labels = []
-        
+
         # Process
         for idx, row in X.iterrows():
             prob, label = self._predict_single(row)
             probs.append(prob)
             labels.append(label)
-            
+
         probs = np.array(probs, dtype=float)
         labels = np.array(labels, dtype=int)
-        
+
         # Calculate risk bands
         risk_bands = []
         for p in probs:
@@ -119,5 +119,5 @@ class ModelClient:
                 risk_bands.append("Medium")
             else:
                 risk_bands.append("High")
-                
+
         return probs, labels, np.array(risk_bands, dtype=object)
