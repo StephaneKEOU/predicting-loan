@@ -31,3 +31,4 @@ pytestdebug.log
 __pycache__/
 *.db
 .streamlit/
+*.pkl
