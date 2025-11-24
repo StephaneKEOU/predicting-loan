@@ -27,11 +27,6 @@
       "default": 8.0
     },
     {
-      "name": "LoanTerm",
-      "dtype": "int",
-      "default": 36
-    },
-    {
       "name": "EmploymentType",
       "dtype": "category",
       "choices": [
@@ -87,11 +82,6 @@
       "default": 0
     },
     {
-      "name": "HasMortgage",
-      "dtype": "int",
-      "default": 0
-    },
-    {
       "name": "CreditScore",
       "dtype": "float",
       "default": 650
@@ -100,11 +90,6 @@
       "name": "NumCreditLines",
       "dtype": "int",
       "default": 3
-    },
-    {
-      "name": "DTIRatio",
-      "dtype": "float",
-      "default": 0.3
     }
   ]
 }
