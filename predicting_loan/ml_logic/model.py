@@ -34,9 +34,9 @@ df = load_data()
 handler = SimpleMissingHandler(how="auto")
 df_fixed = handler.fix_missing(df)
 
-binary_cols = ["HasMortgage", "HasDependents", "HasCoSigner"]
-for col in binary_cols:
-    df[col] = df[col].map({"Yes": 1, "No": 0})
+# binary_cols = ["HasMortgage", "HasDependents", "HasCoSigner"]
+#for col in binary_cols:
+ #   df[col] = df[col].map({"Yes": 1, "No": 0})
 
 # TARGET + DROP USELESS COLUMNS
 df = df.drop(columns=["LoanID"])     # ID column not useful
@@ -47,12 +47,11 @@ X = df.drop(columns=["Default"])
 y = df["Default"]
 
 
-categorical_cols = ['Education', 'EmploymentType', 'MaritalStatus', 'LoanPurpose']
+categorical_cols = ['EmploymentType']
 
 numerical_cols = [
-    'Age', 'Income', 'LoanAmount', 'CreditScore', 'MonthsEmployed',
-    'NumCreditLines', 'InterestRate', 'LoanTerm', 'DTIRatio',
-    'HasDependents', 'HasCoSigner', 'HasMortgage'
+    'Age', 'Income', 'LoanAmount',  'MonthsEmployed',
+     'InterestRate',
 ]
 
 
