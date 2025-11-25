@@ -110,8 +110,11 @@ if mode == "Single Input":
         
         st.markdown("---")
         
-        # Determine if result is good or bad
-        is_good_result = label == 0
+        # Determine risk level based on risk_band
+        risk_band_lower = risk_band.lower()
+        is_low_risk = risk_band_lower == "low"
+        is_high_risk = risk_band_lower == "high"
+        is_medium_risk = risk_band_lower == "medium"
         
         # Results display
         st.subheader("📊 Loan Decision Results")
@@ -121,7 +124,7 @@ if mode == "Single Input":
         
         with col_main:
             # PD display with explanation
-            if is_good_result:
+            if is_low_risk:
                 st.success(f"""
                 **Probability of Default (PD)**
                 
@@ -130,6 +133,16 @@ if mode == "Single Input":
                 *The chance this borrower will fail to repay the loan*
                 
                 **Risk Level:** ✅ Low Risk
+                """)
+            elif is_medium_risk:
+                st.warning(f"""
+                **Probability of Default (PD)**
+                
+                # {prob:.2%}
+                
+                *The chance this borrower will fail to repay the loan*
+                
+                **Risk Level:** ⚠️ Medium Risk
                 """)
             else:
                 st.error(f"""
@@ -145,19 +158,20 @@ if mode == "Single Input":
         with col_action:
             st.markdown("**🎯 Recommended Action**")
             
-            # Actionable recommendation based on risk
-            if is_good_result:
+            # Actionable recommendation based on risk_band (consistent with PD section)
+            if is_low_risk:
                 st.success("**✅ APPROVE**\n\nThis applicant has a low risk profile and is likely to repay the loan.")
+            elif is_medium_risk:
+                st.warning("**⚠️ REVIEW**\n\nThis applicant has moderate risk. Review carefully and consider additional terms.")
             else:
                 st.error("**❌ REJECT**\n\nThis applicant has a high risk of default. Consider requiring additional collateral or rejecting the application.")
             
             # Risk band with explanation
             st.markdown("**Risk Category**")
-            risk_band_lower = risk_band.lower()
-            if risk_band_lower == "low":
+            if is_low_risk:
                 st.success(f"✅ **{risk_band} Risk**")
                 st.caption(f"PD < {LOW_MEDIUM_THRESHOLD:.0%} - Safe to approve")
-            elif risk_band_lower == "medium":
+            elif is_medium_risk:
                 st.warning(f"⚠️ **{risk_band} Risk**")
                 st.caption(f"PD {LOW_MEDIUM_THRESHOLD:.0%}-{MEDIUM_HIGH_THRESHOLD:.0%} - Review carefully")
             else:
@@ -181,10 +195,15 @@ if mode == "Single Input":
                 st.caption("**Who uses it:** Loan officers use this for quick decision-making and portfolio management.")
             
             with col_explain3:
-                st.markdown("**✅ Binary Decision**")
-                risk_text = "Approve" if is_good_result else "Reject"
+                st.markdown("**✅ Recommended Action**")
+                if is_low_risk:
+                    risk_text = "Approve"
+                elif is_medium_risk:
+                    risk_text = "Review"
+                else:
+                    risk_text = "Reject"
                 st.caption(f"**Recommendation:** {risk_text}")
-                st.caption("**What it means:** A clear approve/reject recommendation based on the risk threshold.")
+                st.caption("**What it means:** A clear approve/review/reject recommendation based on the risk band.")
                 st.caption("**Who uses it:** Bank managers use this for final loan approval decisions.")
         
         # Thresholds info
@@ -270,7 +289,7 @@ else:
                 st.metric("Average PD", f"{avg_prob:.2%}")
                 st.caption("Portfolio risk level")
             
-            # Action summary - more compact
+            # Action summary
             st.markdown("---")
             st.markdown("**🎯 Quick Action Summary**")
             
@@ -296,7 +315,7 @@ else:
             # Download button
             st.markdown("---")
             st.download_button(
-                "Download Scored CSV",
+                "⬇️ Download Scored CSV",
                 out.to_csv(index=False).encode("utf-8"),
                 "scored.csv",
                 "text/csv",
