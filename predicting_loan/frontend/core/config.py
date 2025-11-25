@@ -10,7 +10,7 @@ except Exception:
 # This file lives in frontend/core/config.py
 FRONTEND_DIR = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = FRONTEND_DIR / "schemas"
-MODELS_DIR = FRONTEND_DIR / "models"
+MODELS_DIR = Path(__file__).resolve().parent / "models"
 
 THRESHOLDS_PATH = MODELS_DIR / "thresholds.json"
 
@@ -41,7 +41,7 @@ LOW_MEDIUM_THRESHOLD = float(THRESHOLDS.get("low_medium_threshold", 0.05))
 MEDIUM_HIGH_THRESHOLD = float(THRESHOLDS.get("medium_high_threshold", 0.20))
 RISK_LABELS = THRESHOLDS["labels"]
 FEATURE_SCHEMA = str(SCHEMAS_DIR / "feature_schema.json")
-MODEL_PATH = str(MODELS_DIR / "base_model.pkl")
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "logistic_model.pkl"
 
 # API Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "https://my-api-app-726608232851.europe-west1.run.app")
