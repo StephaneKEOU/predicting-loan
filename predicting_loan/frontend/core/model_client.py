@@ -12,8 +12,7 @@ from core.config import (
     API_PREDICT_ENDPOINT
 )
 
-# Name mapping from frontend to API
-# Maps frontend feature names to API field names
+# API only accepts these 6 fields based on API schema
 FIELD_MAPPING = {
     "MonthsEmployed": "months_employed",
     "Age": "age",
@@ -21,13 +20,6 @@ FIELD_MAPPING = {
     "LoanAmount": "loan_amount",
     "InterestRate": "interest_rate",
     "EmploymentType": "employment_type",
-    "LoanPurpose": "loan_purpose",
-    "MaritalStatus": "marital_status",
-    "Education": "education",
-    "HasCoSigner": "has_cosigner",
-    "HasDependents": "has_dependents",
-    "CreditScore": "credit_score",
-    "NumCreditLines": "num_credit_lines",
 }
 
 def convert_to_api_format(row: pd.Series) -> dict:
@@ -35,7 +27,21 @@ def convert_to_api_format(row: pd.Series) -> dict:
     api_data = {}
     for frontend_name, api_name in FIELD_MAPPING.items():
         if frontend_name in row.index:
-            api_data[api_name] = row[frontend_name]
+            value = row[frontend_name]
+            # Skip NaN/None values
+            if pd.isna(value):
+                continue
+            # Convert pandas/numpy types to native Python types
+            if isinstance(value, (np.integer, np.int64, np.int32)):
+                api_data[api_name] = int(value)
+            elif isinstance(value, (np.floating, np.float64, np.float32)):
+                api_data[api_name] = float(value)
+            elif isinstance(value, np.bool_):
+                api_data[api_name] = bool(value)
+            elif hasattr(value, 'item'):  # For scalar numpy/pandas values
+                api_data[api_name] = value.item()
+            else:
+                api_data[api_name] = value
     return api_data
 
 class ModelClient:

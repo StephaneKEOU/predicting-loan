@@ -36,60 +36,6 @@
         "Unemployed"
       ],
       "default": "Full-time"
-    },
-    {
-      "name": "LoanPurpose",
-      "dtype": "category",
-      "choices": [
-        "Home",
-        "Business",
-        "Education",
-        "Auto",
-        "Other"
-      ],
-      "default": "Home"
-    },
-    {
-      "name": "MaritalStatus",
-      "dtype": "category",
-      "choices": [
-        "Single",
-        "Married",
-        "Divorced",
-        "Widowed"
-      ],
-      "default": "Single"
-    },
-    {
-      "name": "Education",
-      "dtype": "category",
-      "choices": [
-        "High School",
-        "Bachelor's",
-        "Master's",
-        "PhD"
-      ],
-      "default": "Bachelor's"
-    },
-    {
-      "name": "HasCoSigner",
-      "dtype": "int",
-      "default": 0
-    },
-    {
-      "name": "HasDependents",
-      "dtype": "int",
-      "default": 0
-    },
-    {
-      "name": "CreditScore",
-      "dtype": "float",
-      "default": 650
-    },
-    {
-      "name": "NumCreditLines",
-      "dtype": "int",
-      "default": 3
     }
   ]
 }
