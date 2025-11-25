@@ -41,7 +41,7 @@ LOW_MEDIUM_THRESHOLD = float(THRESHOLDS.get("low_medium_threshold", 0.05))
 MEDIUM_HIGH_THRESHOLD = float(THRESHOLDS.get("medium_high_threshold", 0.20))
 RISK_LABELS = THRESHOLDS["labels"]
 FEATURE_SCHEMA = str(SCHEMAS_DIR / "feature_schema.json")
-MODEL_PATH = Path(__file__).resolve().parent / "models" / "logistic_model.pkl"
+MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "logistic_model.pkl"
 
 # API Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "https://my-api-app-726608232851.europe-west1.run.app")

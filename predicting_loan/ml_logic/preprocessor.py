@@ -24,21 +24,11 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
 
     standard_numeric = [
         "Age",
-        "CreditScore",
         "InterestRate",
-        "DTIRatio",
-        "NumCreditLines",
-        "LoanTerm",
-        "HasMortgage",
-        "HasDependents",
-        "HasCoSigner",
     ]
 
     onehot_cats = [
-        "Education",
         "EmploymentType",
-        "MaritalStatus",
-        "LoanPurpose",
     ]
 
     # --- Pipelines ---
