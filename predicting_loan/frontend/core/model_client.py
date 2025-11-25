@@ -12,7 +12,6 @@ from core.config import (
     API_PREDICT_ENDPOINT
 )
 
-# Name mapping from frontend to API
 # API only accepts these 6 fields based on API schema
 FIELD_MAPPING = {
     "MonthsEmployed": "months_employed",
@@ -28,7 +27,21 @@ def convert_to_api_format(row: pd.Series) -> dict:
     api_data = {}
     for frontend_name, api_name in FIELD_MAPPING.items():
         if frontend_name in row.index:
-            api_data[api_name] = row[frontend_name]
+            value = row[frontend_name]
+            # Skip NaN/None values
+            if pd.isna(value):
+                continue
+            # Convert pandas/numpy types to native Python types
+            if isinstance(value, (np.integer, np.int64, np.int32)):
+                api_data[api_name] = int(value)
+            elif isinstance(value, (np.floating, np.float64, np.float32)):
+                api_data[api_name] = float(value)
+            elif isinstance(value, np.bool_):
+                api_data[api_name] = bool(value)
+            elif hasattr(value, 'item'):  # For scalar numpy/pandas values
+                api_data[api_name] = value.item()
+            else:
+                api_data[api_name] = value
     return api_data
 
 class ModelClient:
@@ -73,8 +86,10 @@ class ModelClient:
             except:
                 print(f"API request failed: {error_msg}")
 
-            # Fallback to dummy prediction
-            s = row.select_dtypes(include=["number"]).sum()
+
+            # row is a Series, so we need to filter numeric values differently
+            numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+            s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
@@ -85,7 +100,9 @@ class ModelClient:
                 st.warning(f"⚠️ {error_msg}. Using fallback prediction.")
             except:
                 print(error_msg)
-            s = row.select_dtypes(include=["number"]).sum()
+            # row is a Series, so we need to filter numeric values differently
+            numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+            s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
