@@ -13,7 +13,7 @@ from core.config import (
 )
 
 # Name mapping from frontend to API
-# API only accepts these 6 fields based on API schema
+# Maps frontend feature names to API field names
 FIELD_MAPPING = {
     "MonthsEmployed": "months_employed",
     "Age": "age",
@@ -21,6 +21,13 @@ FIELD_MAPPING = {
     "LoanAmount": "loan_amount",
     "InterestRate": "interest_rate",
     "EmploymentType": "employment_type",
+    "LoanPurpose": "loan_purpose",
+    "MaritalStatus": "marital_status",
+    "Education": "education",
+    "HasCoSigner": "has_cosigner",
+    "HasDependents": "has_dependents",
+    "CreditScore": "credit_score",
+    "NumCreditLines": "num_credit_lines",
 }
 
 def convert_to_api_format(row: pd.Series) -> dict:
@@ -73,8 +80,10 @@ class ModelClient:
             except:
                 print(f"API request failed: {error_msg}")
 
-            # Fallback to dummy prediction
-            s = row.select_dtypes(include=["number"]).sum()
+
+            # row is a Series, so we need to filter numeric values differently
+            numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+            s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
@@ -85,7 +94,9 @@ class ModelClient:
                 st.warning(f"⚠️ {error_msg}. Using fallback prediction.")
             except:
                 print(error_msg)
-            s = row.select_dtypes(include=["number"]).sum()
+            # row is a Series, so we need to filter numeric values differently
+            numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+            s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
