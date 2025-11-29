@@ -12,10 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from data import load_data, SimpleMissingHandler
 from preprocessor import get_preprocessor
 
-from sklearn.metrics import (
-    accuracy_score, f1_score, recall_score, precision_score,
-    confusion_matrix, RocCurveDisplay, roc_auc_score
-)
+from sklearn.metrics import roc_auc_score
 
 
 BINARY_COLS = ["HasMortgage", "HasDependents", "HasCoSigner"]
