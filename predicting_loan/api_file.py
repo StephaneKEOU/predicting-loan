@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, conint
 import joblib
 from pathlib import Path
 import logging
+from typing import List
 
 # -------------------------------------------------
 # Logging setup
@@ -96,3 +97,50 @@ def predict(payload: LoanApplication):
 
     return {"prediction": pred,
             "probability": proba_default}
+
+@app.post("/api/v1/batch_predict")
+def batch_predict(payload: List[LoanApplication]):
+
+    logger.info(f"Received batch request with {len(payload)} records")
+    print(payload)
+
+    X = pd.DataFrame([
+        {
+         "LoanAmount": p.loan_amount,
+         "MonthsEmployed": p.months_employed,
+         "Age": p.age,
+         "Income": p.income,
+         "InterestRate": p.interest_rate,
+         "EmploymentType": p.employment_type
+         } for p in payload
+    ])
+
+    try:
+        preds = model.predict(X)
+        probas_default = model.predict_proba(X)[:, 1]
+    except Exception as e:
+        logger.exception("Batch model prediction failed")
+        # Return a 500 with a friendly JSON error
+        raise HTTPException(
+            status_code=500,
+            detail=f"Batch model prediction failed. {str(e)}",
+        ) from e
+
+    logger.info(f"Porbas type: {type(probas_default)}")
+
+    # Convert to plain Python types so FastAPI can JSON-encode them
+    preds_list = [int(p) for p in preds]
+    probas_list = [float(p) for p in probas_default]
+
+    logger.info(f"After conversion type: {type(probas_default)}")
+
+    return {
+        "results": [
+            {
+                "input": p.model_dump(),
+                "prediction": pred,
+                "probability": proba
+                }
+            for p, pred, proba in zip(payload, preds_list, probas_list)
+        ]
+    }
