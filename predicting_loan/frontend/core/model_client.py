@@ -42,6 +42,10 @@ def convert_to_api_format(row: pd.Series) -> dict:
                 api_data[api_name] = value.item()
             else:
                 api_data[api_name] = value
+    
+    if len(api_data) == 0:
+        raise ValueError("No valid data to send to API. All fields are missing or invalid.")
+    
     return api_data
 
 class ModelClient:
@@ -55,6 +59,7 @@ class ModelClient:
         Single API request.
         Returns: probability, label
         """
+        api_data = None
         try:
             api_data = convert_to_api_format(row)
             response = requests.post(
@@ -74,33 +79,70 @@ class ModelClient:
             label = int(result.get("prediction", 0))
 
             return prob, label
-        except requests.exceptions.HTTPError as e:
-            # More detailed error handling
-            status_code = e.response.status_code if e.response else "Unknown"
-            error_text = e.response.text if e.response else str(e)
-            error_msg = f"API HTTP Error {status_code}: {error_text}"
-
-            # Show error in Streamlit if available
+        except ValueError as e:
+            # Data conversion error
+            error_msg = f"Data conversion error: {str(e)}"
             try:
-                st.error(f"⚠️ API Error ({status_code}): {error_text[:200]}")
+                st.error(f"❌ {error_msg}")
             except:
-                print(f"API request failed: {error_msg}")
-
-
-            # row is a Series, so we need to filter numeric values differently
+                print(error_msg)
+            # Fallback to dummy prediction
             numeric_values = pd.to_numeric(row, errors='coerce').dropna()
             s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
             label = int(prob >= self.threshold)
             return prob, label
+        except requests.exceptions.HTTPError as e:
+            # More detailed error handling
+            status_code = e.response.status_code if e.response else "Unknown"
+            error_text = e.response.text if e.response else str(e)
+            
+            # Show detailed error with request data
+            try:
+                st.error(f"❌ API Error ({status_code}): {error_text[:200]}")
+                if api_data:
+                    with st.expander("🔍 Debug: Request Details", expanded=False):
+                        st.json(api_data)
+                        st.text(f"Full error response: {error_text}")
+            except:
+                print(f"API HTTP Error {status_code}: {error_text}")
+                if api_data:
+                    print(f"Request data: {api_data}")
+
+            # Fallback to dummy prediction
+            numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+            s = numeric_values.sum() if len(numeric_values) > 0 else 0
+            prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
+            label = int(prob >= self.threshold)
+            return prob, label
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            # Retry once for cold start issues
+            import time
+            try:
+                time.sleep(1)
+                api_data = convert_to_api_format(row)
+                response = requests.post(self.api_url, json=api_data, 
+                                       headers={"Content-Type": "application/json"}, timeout=15)
+                response.raise_for_status()
+                result = response.json()
+                prob = float(result.get("probability", 0.0))
+                label = int(result.get("prediction", 0))
+                return prob, label
+            except:
+                # Fallback after retry failed
+                numeric_values = pd.to_numeric(row, errors='coerce').dropna()
+                s = numeric_values.sum() if len(numeric_values) > 0 else 0
+                prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
+                label = int(prob >= self.threshold)
+                return prob, label
         except requests.exceptions.RequestException as e:
             # Fallback to dummy prediction on API error
-            error_msg = f"API request failed: {str(e)}"
+            error_msg = f"API connection error: {str(e)}"
             try:
                 st.warning(f"⚠️ {error_msg}. Using fallback prediction.")
             except:
                 print(error_msg)
-            # row is a Series, so we need to filter numeric values differently
+            # Fallback to dummy prediction
             numeric_values = pd.to_numeric(row, errors='coerce').dropna()
             s = numeric_values.sum() if len(numeric_values) > 0 else 0
             prob = float(1.0 / (1.0 + np.exp(-(s % 5) / 5.0)))
