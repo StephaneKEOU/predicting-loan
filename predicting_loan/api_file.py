@@ -23,7 +23,7 @@ app = FastAPI(
 # Load model once at startup
 # -------------------------------------------------
 
-MODEL_PATH = Path(__file__).resolve().parent / "models" / "logistic_model.pkl" ## TO DO: Change to "base_model.pkl"
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "base_model.pkl"
 
 try:
     model = joblib.load(MODEL_PATH)

@@ -5,7 +5,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import (OneHotEncoder,StandardScaler,RobustScaler)
 
 
-def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
+def get_preprocessor(for_training: bool = False) -> ColumnTransformer:
     """
     Builds an preprocessing pipeline for the loan default dataset.
 
@@ -19,19 +19,22 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
     """
 
     # --- Feature Groups  ---
-
     robust_numeric = ["Income", "LoanAmount", "MonthsEmployed"]
+    standard_numeric = ["Age", "InterestRate"]
+    onehot_cats = ["EmploymentType"]
+    binary_cols = []
 
-    standard_numeric = [
-        "Age",
-        "InterestRate",
-    ]
+    if for_training:
+        robust_numeric.extend(["DTIRatio", "CreditScore", "LoanTerm", "NumCreditLines"])
+        onehot_cats.extend(['Education', 'LoanPurpose', 'MaritalStatus'])
+        binary_cols.extend(["HasMortgage", "HasDependents", "HasCoSigner"])
 
-    onehot_cats = [
-        "EmploymentType",
-    ]
-
+    print(robust_numeric)
     # --- Pipelines ---
+
+    binary_pipeline = Pipeline([
+        ("imputer", SimpleImputer(strategy="most_frequent"))
+    ])
 
     robust_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="mean")),
@@ -55,6 +58,7 @@ def preprocess_data(X: pd.DataFrame) -> ColumnTransformer:
             ("robust_num", robust_pipeline, robust_numeric),
             ("standard_num", standard_pipeline, standard_numeric),
             ("onehot_cat", onehot_pipeline, onehot_cats),
+            ("binary_cols", binary_pipeline, binary_cols)
         ]
     )
 
