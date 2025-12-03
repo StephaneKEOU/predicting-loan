@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 
 import pandas as pd
@@ -49,6 +50,15 @@ with st.sidebar:
 st.title("🏦 Loan Default Risk Prediction")
 st.caption("Predict the probability of loan default using machine learning")
 
+def format_column_name(name: str) -> str:
+    """
+    Format column names with spaces for better readability.
+    Examples: 'LoanAmount' -> 'Loan Amount', 'MonthsEmployed' -> 'Months Employed'
+    """
+    # Insert space before capital letters (except the first one)
+    formatted = re.sub(r'(?<!^)(?=[A-Z])', ' ', name)
+    return formatted
+
 def coerce_and_order(df: pd.DataFrame) -> pd.DataFrame:
     cols = []
     for f in schema["features"]:
@@ -81,18 +91,19 @@ if mode == "Single Input":
         dtype = f.get("dtype", "float")
         default = f.get("default", 0)
 
+        display_name = format_column_name(name)
         if dtype == "int":
-            values[name] = target.number_input(name, value=int(default or 0), step=1)
+            values[name] = target.number_input(display_name, value=int(default or 0), step=1)
         elif dtype == "float":
-            values[name] = target.number_input(name, value=float(default or 0.0))
+            values[name] = target.number_input(display_name, value=float(default or 0.0))
         elif dtype == "category":
             choices = f.get("choices", [])
             idx = 0
             if choices and default in choices:
                 idx = choices.index(default)
-            values[name] = target.selectbox(name, choices, index=idx if choices else 0)
+            values[name] = target.selectbox(display_name, choices, index=idx if choices else 0)
         else:
-            values[name] = target.text_input(name, value=str(default or ""))
+            values[name] = target.text_input(display_name, value=str(default or ""))
 
     # Predict button
     st.markdown("---")
@@ -232,7 +243,11 @@ if mode == "Single Input":
                 st.write(f"- **High ≥ {MEDIUM_HIGH_THRESHOLD:.0%}**")
             
             st.markdown("**Input Features:**")
-            st.dataframe(X.assign(prob_default=probs, pred_label=labels, risk_band=risk_bands), use_container_width=True)
+            result_df = X.assign(prob_default=probs, pred_label=labels, risk_band=risk_bands)
+            # Format column names for display
+            result_df_display = result_df.copy()
+            result_df_display.columns = [format_column_name(col) if col in X.columns else col for col in result_df_display.columns]
+            st.dataframe(result_df_display, use_container_width=True)
         
         log(datetime.utcnow().isoformat(), "single", json.dumps(values), prob, label)
 
@@ -252,7 +267,10 @@ else:
         # Preview section
         st.markdown("### 📋 Preview")
         st.caption(f"Total records: {len(raw)}")
-        st.dataframe(raw.head(10), use_container_width=True)
+        # Format column names for display
+        raw_display = raw.copy()
+        raw_display.columns = [format_column_name(col) for col in raw_display.columns]
+        st.dataframe(raw_display.head(10), use_container_width=True)
         
         X = coerce_and_order(raw.copy())
         
@@ -310,7 +328,10 @@ else:
             # Add color coding helper
             st.info("💡 **Tip:** Sort by `prob_default` to see highest risk applications first, or filter by `risk_band` to review specific risk categories.")
             
-            st.dataframe(out.head(20), use_container_width=True)
+            # Format column names for display
+            out_display = out.copy()
+            out_display.columns = [format_column_name(col) if col in X.columns else col for col in out_display.columns]
+            st.dataframe(out_display.head(20), use_container_width=True)
             
             # Download button
             st.markdown("---")
