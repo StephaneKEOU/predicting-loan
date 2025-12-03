@@ -54,10 +54,52 @@ def format_column_name(name: str) -> str:
     """
     Format column names with spaces for better readability.
     Examples: 'LoanAmount' -> 'Loan Amount', 'MonthsEmployed' -> 'Months Employed'
+    Also handles snake_case: 'loan_amount' -> 'Loan Amount', 'months_employed' -> 'Months Employed'
     """
+    # First, convert snake_case to TitleCase if needed
+    if '_' in name:
+        # Convert snake_case to TitleCase: loan_amount -> LoanAmount
+        name = ''.join(word.capitalize() for word in name.split('_'))
+    
     # Insert space before capital letters (except the first one)
     formatted = re.sub(r'(?<!^)(?=[A-Z])', ' ', name)
     return formatted
+
+def map_api_to_frontend_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Map API field names (snake_case) to frontend field names (camelCase).
+    This ensures CSV files with API field names are properly processed.
+    Handles duplicates by preferring frontend column names if both exist.
+    """
+    from core.model_client import FIELD_MAPPING
+    
+    # Create reverse mapping: api_name -> frontend_name
+    api_to_frontend = {v: k for k, v in FIELD_MAPPING.items()}
+    
+    df_mapped = df.copy()
+    columns_to_drop = []
+    columns_to_rename = {}
+    
+    # Check each column and decide whether to rename or drop
+    for col in df_mapped.columns:
+        if col in api_to_frontend:
+            frontend_name = api_to_frontend[col]
+            # If frontend column already exists, drop the API column to avoid duplication
+            if frontend_name in df_mapped.columns:
+                columns_to_drop.append(col)
+            else:
+                # Rename API column to frontend column name
+                columns_to_rename[col] = frontend_name
+    
+    # Apply renames first
+    if columns_to_rename:
+        df_mapped = df_mapped.rename(columns=columns_to_rename)
+    
+    # Then drop duplicates
+    if columns_to_drop:
+        df_mapped = df_mapped.drop(columns=columns_to_drop)
+    
+    return df_mapped
 
 def coerce_and_order(df: pd.DataFrame) -> pd.DataFrame:
     cols = []
@@ -264,15 +306,18 @@ else:
     if up is not None:
         raw = pd.read_csv(up)
         
+        # Map API field names to frontend field names if needed
+        raw_mapped = map_api_to_frontend_columns(raw.copy())
+        
         # Preview section
         st.markdown("### 📋 Preview")
-        st.caption(f"Total records: {len(raw)}")
+        st.caption(f"Total records: {len(raw_mapped)}")
         # Format column names for display
-        raw_display = raw.copy()
+        raw_display = raw_mapped.copy()
         raw_display.columns = [format_column_name(col) for col in raw_display.columns]
         st.dataframe(raw_display.head(10), use_container_width=True)
         
-        X = coerce_and_order(raw.copy())
+        X = coerce_and_order(raw_mapped.copy())
         
         st.markdown("---")
         
