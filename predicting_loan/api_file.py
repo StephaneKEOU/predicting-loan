@@ -51,6 +51,10 @@ class LoanApplication(BaseModel):
     interest_rate: Annotated[float, Field(gt=0, le=100, example=5.5)]
     employment_type: Annotated[EmploymentTypeEnum, Field(example=EmploymentTypeEnum.full_time.value)]
 
+class OptimizeLoanRequest(LoanApplication):
+    desired_probability: Annotated[float, Field(gt=0, lt=1, example=0.2,
+                                                description="Maxium acceptable probability of default")]
+
 # -------------------------------------------------
 # Endpoints
 # -------------------------------------------------
@@ -102,7 +106,6 @@ def predict(payload: LoanApplication):
 def batch_predict(payload: List[LoanApplication]):
 
     logger.info(f"Received batch request with {len(payload)} records")
-    print(payload)
 
     X = pd.DataFrame([
         {
@@ -148,23 +151,18 @@ def batch_predict(payload: List[LoanApplication]):
 MAX_LOAN_AMOUNT = 10_000_000
 
 @app.post("/api/v1/optimize_loan_amount")
-def optimize_loan_amount(
-    loan_amount: Annotated[int, Field(gt=0, example =300000)],
-    desired_probability: Annotated[float, Field(gt=0, lt=1, example=0.2)],
-    months_employed: Annotated[int, Field(ge=0, le=600, example=24)],
-    age: Annotated[int, Field(ge=18, le=100, example=35)],
-    income: Annotated[int, Field(ge=0, example=60000)],
-    interest_rate: Annotated[float, Field(gt=0, le=100, example=5.5)],
-    employment_type: Annotated[EmploymentTypeEnum, Field(example=EmploymentTypeEnum.full_time.value)]
-):
+def optimize_loan_amount(payload: OptimizeLoanRequest):
+
+    loan_amount = payload.loan_amount
+    desired_probability = payload.desired_probability
 
     X = pd.DataFrame([{
         "LoanAmount": loan_amount,
-        "MonthsEmployed": months_employed,
-        "Age": age,
-        "Income": income,
-        "InterestRate": interest_rate,
-        "EmploymentType": employment_type
+        "MonthsEmployed": payload.months_employed,
+        "Age": payload.age,
+        "Income": payload.income,
+        "InterestRate": payload.interest_rate,
+        "EmploymentType": payload.employment_type
     }])
 
     initial_proba_default = model.predict_proba(X)[0][1]
@@ -230,4 +228,5 @@ def optimize_loan_amount(
 
     logger.info(f"Optimal loan amount found: {optimal_loan_amount:.2f}")
 
-    return {"optimal_loan_amount": optimal_loan_amount}
+    return {"optimal_loan_amount": optimal_loan_amount,
+            "probability": proba_for_amount(optimal_loan_amount)}
